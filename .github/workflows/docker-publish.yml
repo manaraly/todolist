@@ -28,5 +28,5 @@ jobs:
         context: .
         push: true
         tags: |
-           ${{ secrets.DOCKER_USERNAME }}/todolist:latest
-           ${{ secrets.DOCKER_USERNAME }}/todolist:${{ github.run_number }}
+           ${{ secrets.DOCKER_USERNAME }}/todolist-project:latest
+           ${{ secrets.DOCKER_USERNAME }}/todolist-project:${{ github.run_number }}
