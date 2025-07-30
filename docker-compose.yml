@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  todolist-app:
+    image: maly555/todolist-project:latest
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+    ports:
+      - "4000:4000"
+    restart: always
+    depends_on:
+      - mongodb
+    environment:
+      - mongoDbUrl=mongodb://mongodb:27017/todolistDb
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  mongodb:
+    image: mongo:8
+    container_name: mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh mongodb:27017/todolistDb --quiet
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  watchtower:
+    image: containrrr/watchtower
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/ansible-user/.docker/config.json:/config.json
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=30
+    
+
+volumes:
+  mongo-data:

@@ -1,0 +1,39 @@
+---
+- name: Deploy ToDo list app with Watchtower
+  hosts: toodolist
+  become: yes
+
+  vars_files:
+    - group_vars/all/vault.yml
+  vars:
+    ansible_user: ansible-user
+
+  tasks:
+    - name: Ensure app directory exists
+      file:
+        path: /home/ansible-user/todolist-app
+        state: directory
+        owner: ansible-user
+        group: ansible-user
+        mode: 0755
+
+    - name: Copy docker-compose.yml
+      copy:
+        src: ../docker-compose.yml
+        dest: /home/ansible-user/todolist-app/docker-compose.yml
+        owner: ansible-user
+        group: ansible-user
+        mode: 0644
+
+    - name: Log in to Docker registry
+      community.docker.docker_login:
+        username: "{{ docker_username }}"
+        password: "{{ docker_password }}"
+        registry_url: https://index.docker.io/v1/
+      become_user: ansible-user
+
+    - name: Start docker-compose
+      become_user: ansible-user
+      community.docker.docker_compose_v2:
+        project_src: /home/ansible-user/todolist-app
+        state: present
