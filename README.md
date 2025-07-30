@@ -1,109 +1,177 @@
+# 📌 To-Do List CI/CD Project
 
-## Documentation
+> Deploying a Node.js To-Do List app with Docker, Ansible, Kubernetes & ArgoCD
 
-[Documentation](https://linktodocumentation)
+## 🧩 Project Overview
 
-📝 To-Do List nodeJs
+This project demonstrates building a modern DevOps pipeline for a Node.js To-Do List application following real-world practices:
 
-The to-do list application is a web-based application that allows users to create and manage a list of tasks. The user interface consists of a form to add new tasks, a list of all tasks, and controls to mark tasks as complete or delete them.
+- **Base App:** Forked from [Ankit6098/Todo-List-nodejs](https://github.com/Ankit6098/Todo-List-nodejs)
+- **Infrastructure:** Oracle VirtualBox VM with Ubuntu
+- **Pipeline:** Complete CI/CD with GitHub Actions → Docker Hub → Auto-deployment
 
-To create the application, Node.js is used to set up the server and handle the logic of the application. Express.js is used to create the routes for the application, allowing the user to interact with the application through a web browser. EJS is used to create the views for the application, allowing the user to see the list of tasks and the form to add new tasks. CSS is used to style the application, making it visually appealing and easy to use.
+## 🏗 Architecture
 
-MongoDB and Mongoose are used to store the tasks in a database, allowing the user to add, delete, and update tasks as needed. Nodemon is used to monitor changes to the code and automatically restart the server, making it easy to develop and test the application.
-
-When the user adds a new task using the form, Node.js and Express.js handle the request and store the task in the database using Mongoose. When the user views the list of tasks, EJS displays the tasks from the database in a list on the web page. When the user marks a task as complete or deletes a task, Node.js and Express.js handle the request and update the database using Mongoose.
-
-Overall, the todo list application using Node.js, Express.js, EJS, CSS, JavaScript, MongoDB, Mongoose, and Nodemon can be a great way to create a functional and interactive web application that allows users to manage their tasks online. With the right combination of technologies, it is possible to create an application that is both functional and aesthetically pleasing, making it easy for users to manage their tasks in a convenient and efficient way.
-
-Technologies Used: NodeJS, ExpressJS, EJS, CSS, JavaScript, Nodemon, MongoDB, Mongoose.
-## Demo
-
-Under process...
-## Authors
-
-- [@AnkitVishwakarma](https://github.com/Ankit6098)
-
-
-## Features
-
-- Create, Update, and Delete Tasks: Enable users to create new tasks, update existing tasks (e.g., mark as completed, edit task details), and delete tasks they no longer need.
-- Task Categories provides Implement the ability for users to categorize their tasks into different categories (e.g., work, personal, shopping) or assign labels/tags to tasks for better organization and filtering.
-- MongoDb to store your the user data
-## Run Locally
-
-Clone the project
-
-```bash
-  git clone https://github.com/Ankit6098/Todos-nodejs
+```
+┌──────────────┐    CI/CD   ┌──────────────┐
+│  GitHub Repo │ ────────►  │ Docker Hub   │
+└──────┬───────┘            └──────┬───────┘
+       │                           │
+       ▼                           ▼
+┌─────────────────────────────────────────┐
+│ VirtualBox VM (Ubuntu 22.04)           │
+│ ┌─────────────┐     ┌─────────────────┐ │
+│ │ Todo App    │     │ MongoDB         │ │
+│ │ (Node.js)   │ ◄── │ (Atlas/Local)   │ │
+│ └─────────────┘     └─────────────────┘ │
+│   ▲   ▲                                 │
+│   │   │ docker-compose                  │
+│   │   └─── Watchtower (auto-update)     │
+│   │                                     │
+│ Ansible Automation                      │
+└─────────────────────────────────────────┘
 ```
 
-Go to the project directory and open index.html file
+## ✅ Implementation Parts
 
-```bash
-  cd Todos-nodejs
+### Part 1 – Containerization & CI 
+- **✅ Cloned:** [Original Todo App](https://github.com/Ankit6098/Todo-List-nodejs)
+- **✅ MongoDB:** Configured with Atlas connection string in `.env`
+- **✅ Dockerfile:** Multi-stage build with Node.js base image
+- **✅ CI Pipeline:** GitHub Actions builds and pushes to Docker Hub private registry
+
+### Part 2 – VM & Configuration Management 
+- **✅ VM Setup:** Oracle VirtualBox with Ubuntu 22.04
+- **✅ Ansible Playbooks:** `config.yaml` & `config2.yaml` for automation
+- **✅ Remote Execution:** Runs from local machine to VirtualBox VM using `hosts.ini`
+- **✅ Secure Variables:** `vault.yml` for encrypted configuration
+
+### Part 3 – Deployment & Auto-Update 
+- **✅ Docker Compose:** Multi-service setup with health checks
+- **✅ Services:** todolist-app + mongodb with persistent volumes
+- **✅ Watchtower:** Auto-pulls new images from registry
+- **✅ Deployment:** `config2.yaml` playbook handles container orchestration
+
+**Tool Justification:** Watchtower chosen for its simplicity, lightweight footprint, and seamless Docker integration. It monitors registry changes automatically and performs zero-downtime updates without complex configuration - perfect for VirtualBox environment with limited resources.
+
+### Part 4 – Kubernetes & GitOps 
+- **✅ K3s Installation:** Lightweight Kubernetes on VM
+- **✅ YAML Manifests:** Complete K8s deployments and services for app + MongoDB
+- **✅ Persistent Storage:** `mongo-pvc.yaml` for MongoDB data persistence
+- **✅ Service Exposure:** Proper service configuration for both components
+
+## 🛠 Technology Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Application** | Node.js, Express.js, EJS |
+| **Database** | MongoDB (Atlas) |
+| **Containerization** | Docker, Docker Compose |
+| **CI/CD** | GitHub Actions, ArgoCD |
+| **Infrastructure** | Oracle VirtualBox, Ansible |
+| **Orchestration** | Watchtower, Kubernetes (k3s) |
+
+## 📁 Repository Structure
+
+```
+todolist/
+├── .github/workflows/
+│   └── docker-publish.yml      # CI pipeline for Docker Hub
+├── ansible/
+│   ├── group_vars/all/
+│   │   └── vault.yml           # Encrypted variables
+│   ├── ansible.cfg             # Ansible configuration
+│   ├── config.yaml             # VM setup playbook
+│   ├── config2.yaml            # App deployment playbook
+│   └── hosts.ini               # Inventory file
+├── k8s/
+│   ├── mongo-deployment.yaml   # MongoDB K8s deployment
+│   ├── mongo-pvc.yaml          # Persistent volume claim
+│   ├── mongo-service.yaml      # MongoDB service
+│   ├── todolist-deployment.yaml # App deployment
+│   └── todolist-service.yaml   # App service
+├── assets/                     # Static files (CSS, images)
+├── config/                     # App configuration
+├── controllers/                # Express.js controllers
+├── models/                     # MongoDB/Mongoose models
+├── routes/                     # Express.js routes
+├── views/                      # EJS templates
+├── Dockerfile                  # Multi-stage container build
+├── docker-compose.yml          # Container orchestration
+├── .env                        # Environment variables
+├── index.js                    # Main application entry
+├── package.json                # Node.js dependencies
+└── README.md                   # This file
 ```
 
-Install the packages
+## 🔧 CI/CD Pipeline
 
+1. **Trigger:** Push to main branch
+2. **Build:** Docker image with latest + build number tags
+3. **Push:** Private Docker Hub repository
+4. **Deploy:** Watchtower auto-pulls and updates containers
+
+## 🚦 Quick Start
+
+### Prerequisites
+- Oracle VirtualBox with Ubuntu VM
+- Docker & Docker Compose
+- Ansible installed locally
+
+### Run Locally
 ```bash
-  npm install / npm i
+git clone https://github.com/manaraly/todolist.git
+cd todolist
+docker compose up --build
+```
+App runs on `http://localhost:4000`
+
+### Production Deployment
+```bash
+# Configure VM
+ansible-playbook ansible/config.yaml
+
+# Deploy application
+ansible-playbook ansible/config2.yaml
 ```
 
-Start the Server
+## 🔑 Security & Configuration
 
-```bash
-    npm start / nodemon start
-```
-## Acknowledgements
+- **Environment Variables:** MongoDB Atlas connection in `.env`
+- **GitHub Secrets:** Docker Hub credentials secured
+- **SSH Keys:** Passwordless access for Ansible automation
+- **Health Checks:** Application and database monitoring
 
- - [nodemon](https://nodemon.io/)
- - [mongoDb](https://www.mongodb.com/)
- - [mongoose](https://mongoosejs.com/)
+## 🧠 Challenges & Solutions
 
+| Challenge | Solution |
+|-----------|----------|
+| MongoDB data persistence | Added volumes in compose, PVC in K8s |
+| VirtualBox resource limitations | Used lightweight k3s and Watchtower |
+| Image update automation | Implemented Watchtower for automatic pulls |
+| CI image tagging | Added build numbers alongside latest tag |
 
-## Screenshots
+ ## ScreenShots
+ 
+ <img width="830" height="684" alt="image" src="https://github.com/user-attachments/assets/fc3c1fb6-28af-4e6a-b604-1438ad9fbcf3" />
+<img width="1280" height="551" alt="image" src="https://github.com/user-attachments/assets/1f04d17e-4fed-4e0d-8587-17056895b821" />
+<img width="976" height="583" alt="image" src="https://github.com/user-attachments/assets/32b4dc54-29a4-431b-a79e-29bb70063c4c" />
+<img width="703" height="377" alt="image" src="https://github.com/user-attachments/assets/5060c4a6-1169-4e2c-a085-9adb73651317" />
+<img width="794" height="453" alt="image" src="https://github.com/user-attachments/assets/a2c87ac5-f6b1-40f5-85d6-a4d62e3b2b75" />
+<img width="1280" height="513" alt="image" src="https://github.com/user-attachments/assets/2f97a387-1cb5-4708-8d32-8d1c1549225b" />
 
-![225232515-4c100b6b-52e4-40f8-a6d4-85e30dc2f5e7](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/487f548f-7ca6-4183-9443-c88c9f79c3f0)
-![225232960-da554f1f-ba4a-41f8-9856-edaebe339d76](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/25515d2e-1d72-498d-8044-59a01c6b9127)
-![225238829-05433362-5b16-454c-92d5-5e536fe6912e](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/316d15ca-1fe8-4581-80b1-fc316340bba6)
-![225239140-226f8eae-d8b8-4055-8a68-d85d523c2422](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/44a0c418-449e-446f-8a8e-3c4e14fca8bf)
-![225239221-caf86f3d-ef17-4d18-80a6-c72123ff5444](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/2ee90ab0-95d4-44f4-80ac-b17b088ac1ce)
-![225239406-98b7ba7d-df97-4d27-bb66-596a32187d87](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/960ff353-1ce9-4ef8-94e4-10af09184fd2)
-![225239841-4b5d77f0-4a54-4339-b6b3-b6a1be6776b5](https://github.com/Ankit6098/Todos-nodejs/assets/92246613/f5ffc3b8-480f-4d11-9a0b-c469e3c17e8e)
+## Part4
 
-
-## Related
-
-Here are some other projects
-
-[Alarm CLock - javascript](https://github.com/Ankit6098/Todos-nodejs)\
-[IMDb Clone - javascript](https://github.com/Ankit6098/IMDb-Clone)
-
-
-## 🚀 About Me
-I'm a full stack developer...
+<img width="1280" height="588" alt="image" src="https://github.com/user-attachments/assets/1207c0de-08c3-4212-a66b-20c79736bd74" />
+<img width="1280" height="569" alt="image" src="https://github.com/user-attachments/assets/68b9edbd-b63a-463c-9acf-cbf00cd56a17" />
 
 
-# Hi, I'm Ankit! 👋
+👨‍💻 Author
 
-I'm a full stack developer 😎 ... Love to Develop Classic Unique fascinating and Eye Catching UI and Love to Create Projects and Building logics.
-## 🔗 Links
-[![portfolio](https://img.shields.io/badge/my_portfolio-000?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ankithub.me/Resume/)
-
-[![linkedin](https://img.shields.io/badge/linkedin-0A66C2?style=for-the-badge&logo=linkedin&logoColorwhite=)](https://www.linkedin.com/in/ankit-vishwakarma-6531221b0/)
-
-
-## Other Common Github Profile Sections
-🧠 I'm currently learning FullStack Developer Course from Coding Ninjas
-
-📫 How to reach me ankitvis609@gmail.com
+**Manar Aly Zahran**  
+DevOps Engineering Intern  
+📧 manaraly136@gmail.com 
+🔗 inkedin.com/in/manar-aly-/recent-activity/all/
 
 
-## 🛠 Skills
-React, Java, Javascript, HTML, CSS, Nodejs, ExpressJs, Mongodb, Mongoose...
-
-
-## Feedback
-
-If you have any feedback, please reach out to us at ankitvis609@gmail.com
 
